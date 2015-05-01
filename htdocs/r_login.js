@@ -2,13 +2,6 @@
 /**
  * This class displays a Login Form, with Login/Password fields.
  */
-function showLogin() {
-  React.render(
-    <LoginWidget />,
-    document.getElementById('loginformcontainer')
-  );
-}
-
 var LoginForm = React.createClass({
   propTypes: {
     defaultLogin: React.PropTypes.string,
@@ -23,8 +16,11 @@ var LoginForm = React.createClass({
     };
   },
   doLogin: function() {
-    var loggedCallback = this.props.setLogged;
+    var loggedCallback = this.props.goLogged;
     loggedCallback($('#helperlogin').val(), $('#helperpass').val());
+  },
+  componentDidMount: function() {
+    $('#login-remember-tooltip').tooltip();
   },
   render: function() {
     LOGGER.debug("LoginForm.render starts");
@@ -42,7 +38,7 @@ var LoginForm = React.createClass({
         </div>
         <div id="login-remember-tooltip" className="checkbox" data-placement="top" title="Ne faites pas ça sur un ordi partagé !">
           <label>
-            <input type="checkbox" onChange={this.toggleRemember} checked={this.state.rememberInfo} /> Se souvenir de moi
+            <input type="checkbox" defaultChecked={false} /> Se souvenir de moi
           </label>
         </div>
         <button type="submit" className="btn btn-primary btn-block">Valider</button>
@@ -52,6 +48,9 @@ var LoginForm = React.createClass({
   }
 });
 
+/**
+ * Once logged, this class displays the username.
+ */
 var LoggedLine = React.createClass({
   propTypes: {
     loggedName: React.PropTypes.string,
@@ -76,7 +75,7 @@ var LoggedLine = React.createClass({
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
-          {this.props.loggedName}
+          {this.props.loggedName} ({this.props.loggedName.length} caractères)
         </div>
         <div id="logged-line-tooltip" className="col-xs-2" title="Déconnexion" data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
@@ -86,16 +85,19 @@ var LoggedLine = React.createClass({
   }
 });
 
+/**
+ * This widget shows the LoginForm when not logged, and the LoggedLine otherwise.
+ */
 var LoginWidget = React.createClass({
   getInitialState: function() {
-    var retrvd = retrieveState();
-    if(retrvd != null) {
-      LOGGER.info("LoginWidget.getInitialState retrieved "+retrvd.locale);
+    var retrvdLocale = retrieveFromCookie();
+    if(retrvdLocale != null) {
+      LOGGER.info("LoginWidget.getInitialState retrieved "+retrvdLocale);
       return {
       	logged: false,
       	loggedName:"",
       	loggedPass:"",
-        locale: retrvd.locale
+        locale: retrvdLocale
       };
     }
     var navLocale = navigator.languages? navigator.languages[0] : (navigator.language || navigator.userLanguage);
@@ -113,7 +115,7 @@ var LoginWidget = React.createClass({
       alert("Tout faux.");
       this.setState({logged:false});
     } else {
-      this.setState({logged:true});
+      this.setState({logged:true, loggedName:_loggedName, loggedPass:_loggedPass});
     }
   },
   goDelog: function() {
@@ -124,7 +126,7 @@ var LoginWidget = React.createClass({
     LOGGER.debug("LoginWidget.render");
     var loginDisplay;
     var loggedDisplay;
-    if(!this.state.isLogged) {
+    if(!this.state.logged) {
       LOGGER.debug("LoginWidget.rendering state NOT LOGGED");
       loginDisplay = "block";
       loggedDisplay = "none";
@@ -134,7 +136,7 @@ var LoginWidget = React.createClass({
     }
     return (
       <div style={{"paddingLeft":"4px", "maxWidth":"250px"}}>
-        <LoginForm displayVal={loginDisplay} defaultLogin={this.state.loggedName} defaultPass={this.state.loggedPass} rememberInfo={false} goLogged={this.goLogged} />
+        <LoginForm displayVal={loginDisplay}  loggedName={this.state.loggedName}  loggedPass={this.state.loggedPass} goLogged={this.goLogged} />
         <LoggedLine displayVal={loggedDisplay} loggedName={this.state.loggedName} goDelog={this.goDelog} />
       </div>
     );
@@ -147,7 +149,7 @@ var LOGGER = (function() {
   var WARN = 2;
   var ERR = 3;
   var NONE = 99;
-  var level = INFO;
+  var level = DBG;
   function _setLevel(level) {
     if(level === "DEBUG") {
       level = DBG;
@@ -190,7 +192,25 @@ var LOGGER = (function() {
   }
 })();
 
+function retrieveFromCookie() {
+  var userLocale = null;
+  try {
+    var cookies = document.cookie.split(';');
+    for(var i=0; i<cookies.length; i++) {
+      var cookie = cookies[i];
+      while (cookie.charAt(0)===' ') cookie = cookie.substring(1);
+      if (cookie.indexOf("r18locale=") === 0) {
+        userLocale = cookie.substring("r18locale=".length,cookie.length);
+        LOGGER.debug("Retrieved UserLocale: " + userLocale);
+      }
+    }
+  } catch(e) { LOGGER.error(e); }
+  return userLocale;
+};
 
 $(document).ready(function() {
-  showLogin();
+  React.render(
+    <LoginWidget />,
+    document.getElementById('loginformcontainer')
+  );
 });

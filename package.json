@@ -1,0 +1,26 @@
+{
+  "name": "reacti18n",
+  "version": "0.0.0",
+  "description": "ReactJS i18n meetup",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/voiceofvega/reacti18n"
+  },
+  "keywords": [
+    "i18n",
+    "ReactJS"
+  ],
+  "author": "Philippe Martinou",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/voiceofvega/reacti18n/issues"
+  },
+  "homepage": "https://github.com/voiceofvega/reacti18n",
+  "dependencies": {
+    "express": "~4.12.3"
+  }
+}
