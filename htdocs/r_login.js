@@ -26,22 +26,22 @@ var LoginForm = React.createClass({
     LOGGER.debug("LoginForm.render starts");
     return (
     <div className="container" id="loginform" style={{"maxWidth":"250px", "display":this.props.displayVal}}>
-      <h4>Formulaire de Login</h4>
+      <h4>{ln("LoginForm.title")}</h4>
       <form onSubmit={this.doLogin} action="javascript:;">
         <div className="form-group">
-          <label htmlFor="helperlogin">Utilisateur</label>
-          <input type="text" className="form-control" id="helperlogin" placeholder="Votre email" defaultValue={this.props.defaultLogin}/>
+          <label htmlFor="helperlogin">{ln("LoginForm.loginLabel")}</label>
+          <input type="text" className="form-control" id="helperlogin" placeholder={ln("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
         </div>
         <div className="form-group">
-          <label htmlFor="helperpass">Mot de passe</label>
-          <input type="password" className="form-control" id="helperpass" placeholder="Mot de passe" defaultValue={this.props.defaultPass}/>
+          <label htmlFor="helperpass">{ln("LoginForm.passLabel")}</label>
+          <input type="password" className="form-control" id="helperpass" placeholder={ln("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
         </div>
-        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title="Ne faites pas ça sur un ordi partagé !">
+        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={ln("LoginForm.rememberTooltip")}>
           <label>
-            <input type="checkbox" defaultChecked={false} /> Se souvenir de moi
+            <input type="checkbox" defaultChecked={false} /> {ln("LoginForm.rememberInfo")}
           </label>
         </div>
-        <button type="submit" className="btn btn-primary btn-block">Valider</button>
+        <button type="submit" className="btn btn-primary btn-block">{ln("LoginForm.loginButton")}</button>
       </form>
     </div>
     );
@@ -75,15 +75,17 @@ var LoggedLine = React.createClass({
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
-          {this.props.loggedName} ({this.props.loggedName.length} caractères)
+          {this.props.loggedName} ({this.props.loggedName.length} {ln("LoggedLine.numchars")})
         </div>
-        <div id="logged-line-tooltip" className="col-xs-2" title="Déconnexion" data-placement="left" >
+        <div id="logged-line-tooltip" className="col-xs-2" title={ln("LoggedLine.deconnexion")} data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
         </div>
       </div>
     );
   }
 });
+
+
 
 /**
  * This widget shows the LoginForm when not logged, and the LoggedLine otherwise.
@@ -93,6 +95,7 @@ var LoginWidget = React.createClass({
     var retrvdLocale = retrieveFromCookie();
     if(retrvdLocale != null) {
       LOGGER.info("LoginWidget.getInitialState retrieved "+retrvdLocale);
+      XLator.setLocale(retrvdLocale);
       return {
       	logged: false,
       	loggedName:"",
@@ -102,6 +105,7 @@ var LoginWidget = React.createClass({
     }
     var navLocale = navigator.languages? navigator.languages[0] : (navigator.language || navigator.userLanguage);
     LOGGER.info("LoginWidget.getInitialState using Browser Language: " + navLocale);
+    XLator.setLocale(navLocale);
     return {
       logged: false,
   	  loggedName:"",
@@ -112,7 +116,7 @@ var LoginWidget = React.createClass({
   goLogged: function(_loggedName, _loggedPass) {
     LOGGER.debug("LoginWidget.goLogged: " + _loggedName);
     if(_loggedPass !== 'pass') {
-      alert("Tout faux.");
+      alert(ln("LoginForm.errorLogin"));
       this.setState({logged:false});
     } else {
       this.setState({logged:true, loggedName:_loggedName, loggedPass:_loggedPass});
@@ -121,6 +125,13 @@ var LoginWidget = React.createClass({
   goDelog: function() {
     LOGGER.debug("LoginWidget.goDelog.");
     this.setState({logged:false});
+  },
+  languageChanged: function(newLocale) {
+    var newLang = newLocale.id;
+    LOGGER.info("LoginWidget.languageChanged to " + newLang);
+    XLator.setLocale(newLang);
+    saveLocale(newLang);
+    this.setState({locale:newLang});
   },
   render: function() {
     LOGGER.debug("LoginWidget.render");
@@ -134,8 +145,14 @@ var LoginWidget = React.createClass({
       loginDisplay = "none";
       loggedDisplay = "block";
     }
+    var languages = [
+      {id: 'en_US',title: 'English (US)',name: ' English (US)',flagImg: 'lib/pls/images/flags/us.png',flagTitle: 'United States'},
+      {id: 'fr_FR',title: 'French (France)',name: ' Français (France)',flagImg: 'lib/pls/images/flags/fr.png',flagTitle: 'France'}
+    ];
+
     return (
       <div style={{"paddingLeft":"4px", "maxWidth":"250px"}}>
+        <PolyglotLanguageSwitcher items={languages} selectedLang={this.state.locale} onLanguageChanged={this.languageChanged} openMode="hover" />
         <LoginForm displayVal={loginDisplay}  loggedName={this.state.loggedName}  loggedPass={this.state.loggedPass} goLogged={this.goLogged} />
         <LoggedLine displayVal={loggedDisplay} loggedName={this.state.loggedName} goDelog={this.goDelog} />
       </div>
@@ -206,6 +223,87 @@ function retrieveFromCookie() {
     }
   } catch(e) { LOGGER.error(e); }
   return userLocale;
+};
+function saveLocale(newLocale) {
+  LOGGER.debug("saveLocale: " + newLocale);
+  var expiresDays = 60;  // 3 months
+  var d = new Date();
+  d.setTime(d.getTime() + (expiresDays*24*3600000));
+  var expires = "expires="+d.toUTCString();
+  document.cookie = "r18locale=" + newLocale + "; " + expires;
+};
+
+/**
+ * Short localization function name, proxies to the implementation.
+ * Could be internalized in the Components for avoiding global namespace
+ * issues, but there is a trade-off between that and having a compact naming.
+ */
+function ln() {
+  if(arguments.length < 1) {
+    return "??";
+  }
+  return XLator.xlate(arguments);
+}
+
+/**
+ * This is a basic Translator module implementation, for demonstrating the principle.
+ */
+var XLator = (function() {
+  var currentLang = "fr";
+  function _xlate(args) {
+    var keyArgs = args[0].split(".");
+    var mod = keyArgs[0];
+    var key = keyArgs[1];
+    return XLations["xl_" + currentLang][mod][key];
+  }
+  function _setLocale(newLocale) {
+    if(newLocale.indexOf("en") == 0) {
+      currentLang = "en";
+    } else {
+      currentLang = "fr";
+    }
+  }
+  return {
+    xlate:_xlate,
+    setLocale: _setLocale
+  }
+})();
+
+var XLations = {
+  xl_fr : {
+    LoginForm: {
+      errorLogin: "Echec du Login.",
+      title: "Formulaire pour Login",
+      loginLabel: "Email (login)",
+      loginPlaceholder: "Votre email",
+      passLabel: "Mot de passe",
+      passPlaceholder: "Password", 
+      rememberTooltip: "Non recommandé sur un ordinateur partagé.",
+      rememberInfo: "Mémoriser ces informations",
+      loginButton: "Login"
+    },
+    LoggedLine: {
+      numchars: "caractères",
+      deconnexion: "Déconnexion"
+    }
+  },
+  xl_en : {
+    LoginForm: {
+      errorLogin: "Login failed. Please check your Internet connection and the login information.",
+      title: "Login form",
+      loginLabel: "Email (login)",
+      loginPlaceholder: "Your email",
+      passLabel: "Password",
+      passPlaceholder: "Password", 
+      rememberTooltip: "Strongly discouraged on a public computer.",
+      rememberInfo: "Remember information",
+      loginButton: "Login"
+    },
+    LoggedLine: {
+      numchars: "chars",
+      deconnexion: "Disconnect"
+    }
+  }
 };
 
 $(document).ready(function() {
