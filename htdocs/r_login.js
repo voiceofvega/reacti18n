@@ -72,6 +72,9 @@ var LoggedLine = React.createClass({
   },
   render: function() {
     LOGGER.debug("LoggedLine.render starts");
+    // Built-in method: May take a Locale argument, but we need to make the current locale available here
+    // Otherwise, as this is the case here, the host environment Locale is used.
+    var dateRendered = new Date().toLocaleString();
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
@@ -79,6 +82,9 @@ var LoggedLine = React.createClass({
         </div>
         <div id="logged-line-tooltip" className="col-xs-2" title={ln("LoggedLine.deconnexion")} data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
+        </div>
+        <div>
+          {ln("LoggedLine.rendered")}: {dateRendered}
         </div>
       </div>
     );
@@ -284,7 +290,8 @@ var XLations = {
     },
     LoggedLine: {
       numchars: "caractères",
-      deconnexion: "Déconnexion"
+      deconnexion: "Déconnexion",
+      rendered: "Rendu le"
     }
   },
   xl_en : {
@@ -301,7 +308,8 @@ var XLations = {
     },
     LoggedLine: {
       numchars: "chars",
-      deconnexion: "Disconnect"
+      deconnexion: "Disconnect",
+      rendered: "Rendered"
     }
   }
 };
