@@ -1,13 +1,9 @@
 
-var IntlMixin       = ReactIntl.IntlMixin;
-var FormattedDate   = ReactIntl.FormattedDate;
-var FormattedMessage = ReactIntl.FormattedMessage;
 
 /**
  * This class displays a Login Form, with Login/Password fields.
  */
 var LoginForm = React.createClass({
-  mixins: [IntlMixin],
   propTypes: {
     defaultLogin: React.PropTypes.string,
     defaultPass: React.PropTypes.string,
@@ -31,22 +27,22 @@ var LoginForm = React.createClass({
     LOGGER.debug("LoginForm.render starts");
     return (
     <div className="container" id="loginform" style={{"maxWidth":"250px", "display":this.props.displayVal}}>
-      <h4>{this.getIntlMessage("LoginForm.title")}</h4>
+      <h4>{polyglot.t("LoginForm.title")}</h4>
       <form onSubmit={this.doLogin} action="javascript:;">
         <div className="form-group">
-          <label htmlFor="helperlogin">{this.getIntlMessage("LoginForm.loginLabel")}</label>
-          <input type="text" className="form-control" id="helperlogin" placeholder={this.getIntlMessage("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
+          <label htmlFor="helperlogin">{polyglot.t("LoginForm.loginLabel")}</label>
+          <input type="text" className="form-control" id="helperlogin" placeholder={polyglot.t("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
         </div>
         <div className="form-group">
-          <label htmlFor="helperpass">{this.getIntlMessage("LoginForm.passLabel")}</label>
-          <input type="password" className="form-control" id="helperpass" placeholder={this.getIntlMessage("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
+          <label htmlFor="helperpass">{polyglot.t("LoginForm.passLabel")}</label>
+          <input type="password" className="form-control" id="helperpass" placeholder={polyglot.t("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
         </div>
-        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={this.getIntlMessage("LoginForm.rememberTooltip")}>
+        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={polyglot.t("LoginForm.rememberTooltip")}>
           <label>
-            <input type="checkbox" defaultChecked={false} /> {this.getIntlMessage("LoginForm.rememberInfo")}
+            <input type="checkbox" defaultChecked={false} /> {polyglot.t("LoginForm.rememberInfo")}
           </label>
         </div>
-        <button type="submit" className="btn btn-primary btn-block">{this.getIntlMessage("LoginForm.loginButton")}</button>
+        <button type="submit" className="btn btn-primary btn-block">{polyglot.t("LoginForm.loginButton")}</button>
       </form>
     </div>
     );
@@ -57,7 +53,6 @@ var LoginForm = React.createClass({
  * Once logged, this class displays the username.
  */
 var LoggedLine = React.createClass({
-  mixins: [IntlMixin],
   propTypes: {
     loggedName: React.PropTypes.string,
     displayVal: React.PropTypes.string
@@ -81,16 +76,16 @@ var LoggedLine = React.createClass({
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
-          {this.props.loggedName} (<FormattedMessage message={this.getIntlMessage("LoggedLine.numchars")} numChars={this.props.loggedName.length} />)
+          {this.props.loggedName} ({polyglot.t("LoggedLine.numchars", {"smart_count": this.props.loggedName.length} )} )
         </div>
-        <div id="logged-line-tooltip" className="col-xs-2" title={this.getIntlMessage("LoggedLine.deconnexion")} data-placement="left" >
+        <div id="logged-line-tooltip" className="col-xs-2" title={polyglot.t("LoggedLine.deconnexion")} data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
         </div>
         <div>
-          <FormattedMessage message={this.getIntlMessage("LoggedLine.rendered")} dateRendered={new Date()} />
+          {polyglot.t("LoggedLine.rendered", {dateRendered:new Date()} ) }
         </div>
         <div>
-          <FormattedMessage message={this.getIntlMessage("LoggedLine.loginGender")} gender={this.props.loggedName} />
+          {polyglot.t("LoggedLine.loginGender", {gender: this.props.loggedName} ) }
         </div>
       </div>
     );
@@ -103,7 +98,6 @@ var LoggedLine = React.createClass({
  * This widget shows the LoginForm when not logged, and the LoggedLine otherwise.
  */
 var LoginWidget = React.createClass({
-  mixins: [IntlMixin],
   getInitialState: function() {
     return {
       logged: false,
@@ -114,7 +108,7 @@ var LoginWidget = React.createClass({
   goLogged: function(_loggedName, _loggedPass) {
     LOGGER.debug("LoginWidget.goLogged: " + _loggedName);
     if(_loggedPass !== 'pass') {
-      alert(this.getIntlMessage("LoginForm.errorLogin"));
+      alert(polyglot.t("LoginForm.errorLogin"));
       this.setState({logged:false});
     } else {
       this.setState({logged:true, loggedName:_loggedName, loggedPass:_loggedPass});
@@ -246,7 +240,7 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "{numChars, plural, =0 {aucun caractère} one {1 caractère} other {# caractères}}",
+      numchars: "%{smart_count} caractère |||| %{smart_count} caractères",
       deconnexion: "Déconnexion",
       rendered: "Rendu le {dateRendered,date,medium}",
       loginGender: "{gender, select, homme {un homme est logué} femme {une femme est loguée} other {une personne est loguée}}."
@@ -265,7 +259,7 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "{numChars, plural, =0 {no character} one {1 char} other {# chars}}",
+      numchars: "%{smart_count} char |||| %{smart_count} chars",
       deconnexion: "Disconnect",
       rendered: "Rendered on {dateRendered,date,medium}",
       loginGender: "{gender, select, homme {a man is logged} femme {a woman is logged} other {a person is logged}}."
@@ -273,20 +267,27 @@ var XLations = {
   }
 };
 
+// HERE the global variable polyglot is created
+var polyglot = new Polyglot();
+
 function renderLocalized(userLocale) {
   userLocale = userLocale.replace("_","-");
   var langFile = XLations.xl_en;
   if(userLocale.indexOf("en") == 0) {
     langFile = XLations.xl_en;
+    polyglot.extend(langFile);
+    polyglot.locale("en");
   } else {
     langFile = XLations.xl_fr;
+    polyglot.extend(langFile);
+    polyglot.locale("fr");
   }
   var intlData = {
       "locales": userLocale,
       "messages": langFile
   };  
   React.render(
-    <LoginWidget {...intlData} key={userLocale} />,
+    <LoginWidget />,
     document.getElementById('loginformcontainer')
   );
 
