@@ -1,8 +1,13 @@
 
+var IntlMixin       = ReactIntl.IntlMixin;
+var FormattedDate   = ReactIntl.FormattedDate;
+var FormattedMessage = ReactIntl.FormattedMessage;
+
 /**
  * This class displays a Login Form, with Login/Password fields.
  */
 var LoginForm = React.createClass({
+  mixins: [IntlMixin],
   propTypes: {
     defaultLogin: React.PropTypes.string,
     defaultPass: React.PropTypes.string,
@@ -26,22 +31,22 @@ var LoginForm = React.createClass({
     LOGGER.debug("LoginForm.render starts");
     return (
     <div className="container" id="loginform" style={{"maxWidth":"250px", "display":this.props.displayVal}}>
-      <h4>{ln("LoginForm.title")}</h4>
+      <h4>{this.getIntlMessage("LoginForm.title")}</h4>
       <form onSubmit={this.doLogin} action="javascript:;">
         <div className="form-group">
-          <label htmlFor="helperlogin">{ln("LoginForm.loginLabel")}</label>
-          <input type="text" className="form-control" id="helperlogin" placeholder={ln("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
+          <label htmlFor="helperlogin">{this.getIntlMessage("LoginForm.loginLabel")}</label>
+          <input type="text" className="form-control" id="helperlogin" placeholder={this.getIntlMessage("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
         </div>
         <div className="form-group">
-          <label htmlFor="helperpass">{ln("LoginForm.passLabel")}</label>
-          <input type="password" className="form-control" id="helperpass" placeholder={ln("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
+          <label htmlFor="helperpass">{this.getIntlMessage("LoginForm.passLabel")}</label>
+          <input type="password" className="form-control" id="helperpass" placeholder={this.getIntlMessage("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
         </div>
-        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={ln("LoginForm.rememberTooltip")}>
+        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={this.getIntlMessage("LoginForm.rememberTooltip")}>
           <label>
-            <input type="checkbox" defaultChecked={false} /> {ln("LoginForm.rememberInfo")}
+            <input type="checkbox" defaultChecked={false} /> {this.getIntlMessage("LoginForm.rememberInfo")}
           </label>
         </div>
-        <button type="submit" className="btn btn-primary btn-block">{ln("LoginForm.loginButton")}</button>
+        <button type="submit" className="btn btn-primary btn-block">{this.getIntlMessage("LoginForm.loginButton")}</button>
       </form>
     </div>
     );
@@ -52,6 +57,7 @@ var LoginForm = React.createClass({
  * Once logged, this class displays the username.
  */
 var LoggedLine = React.createClass({
+  mixins: [IntlMixin],
   propTypes: {
     loggedName: React.PropTypes.string,
     displayVal: React.PropTypes.string
@@ -72,19 +78,19 @@ var LoggedLine = React.createClass({
   },
   render: function() {
     LOGGER.debug("LoggedLine.render starts");
-    // Built-in method: May take a Locale argument, but we need to make the current locale available here
-    // Otherwise, as this is the case here, the host environment Locale is used.
-    var dateRendered = new Date().toLocaleString();
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
-          {this.props.loggedName} ({this.props.loggedName.length} {ln("LoggedLine.numchars")})
+          {this.props.loggedName} (<FormattedMessage message={this.getIntlMessage("LoggedLine.numchars")} numChars={this.props.loggedName.length} />)
         </div>
-        <div id="logged-line-tooltip" className="col-xs-2" title={ln("LoggedLine.deconnexion")} data-placement="left" >
+        <div id="logged-line-tooltip" className="col-xs-2" title={this.getIntlMessage("LoggedLine.deconnexion")} data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
         </div>
         <div>
-          {ln("LoggedLine.rendered")}: {dateRendered}
+          <FormattedMessage message={this.getIntlMessage("LoggedLine.rendered")} dateRendered={new Date()} />
+        </div>
+        <div>
+          <FormattedMessage message={this.getIntlMessage("LoggedLine.loginGender")} gender={this.props.loggedName} />
         </div>
       </div>
     );
@@ -97,32 +103,18 @@ var LoggedLine = React.createClass({
  * This widget shows the LoginForm when not logged, and the LoggedLine otherwise.
  */
 var LoginWidget = React.createClass({
+  mixins: [IntlMixin],
   getInitialState: function() {
-    var retrvdLocale = retrieveFromCookie();
-    if(retrvdLocale != null) {
-      LOGGER.info("LoginWidget.getInitialState retrieved "+retrvdLocale);
-      XLator.setLocale(retrvdLocale);
-      return {
-      	logged: false,
-      	loggedName:"",
-      	loggedPass:"",
-        locale: retrvdLocale
-      };
-    }
-    var navLocale = navigator.languages? navigator.languages[0] : (navigator.language || navigator.userLanguage);
-    LOGGER.info("LoginWidget.getInitialState using Browser Language: " + navLocale);
-    XLator.setLocale(navLocale);
     return {
       logged: false,
-  	  loggedName:"",
-  	  loggedPass:"",
-      locale: navLocale
+      loggedName: "",
+      loggedPass: ""
     };
   },
   goLogged: function(_loggedName, _loggedPass) {
     LOGGER.debug("LoginWidget.goLogged: " + _loggedName);
     if(_loggedPass !== 'pass') {
-      alert(ln("LoginForm.errorLogin"));
+      alert(this.getIntlMessage("LoginForm.errorLogin"));
       this.setState({logged:false});
     } else {
       this.setState({logged:true, loggedName:_loggedName, loggedPass:_loggedPass});
@@ -135,9 +127,8 @@ var LoginWidget = React.createClass({
   languageChanged: function(newLocale) {
     var newLang = newLocale.id;
     LOGGER.info("LoginWidget.languageChanged to " + newLang);
-    XLator.setLocale(newLang);
+    renderLocalized(newLang);
     saveLocale(newLang);
-    this.setState({locale:newLang});
   },
   render: function() {
     LOGGER.debug("LoginWidget.render");
@@ -152,13 +143,13 @@ var LoginWidget = React.createClass({
       loggedDisplay = "block";
     }
     var languages = [
-      {id: 'en_US',title: 'English (US)',name: ' English (US)',flagImg: 'lib/pls/images/flags/us.png',flagTitle: 'United States'},
-      {id: 'fr_FR',title: 'French (France)',name: ' Français (France)',flagImg: 'lib/pls/images/flags/fr.png',flagTitle: 'France'}
+      {id: 'en-US',title: 'English (US)',name: ' English (US)',flagImg: 'lib/pls/images/flags/us.png',flagTitle: 'United States'},
+      {id: 'fr-FR',title: 'French (France)',name: ' Français (France)',flagImg: 'lib/pls/images/flags/fr.png',flagTitle: 'France'}
     ];
 
     return (
       <div style={{"paddingLeft":"4px", "maxWidth":"250px"}}>
-        <PolyglotLanguageSwitcher items={languages} selectedLang={this.state.locale} onLanguageChanged={this.languageChanged} openMode="hover" />
+        <PolyglotLanguageSwitcher items={languages} selectedLang={this.props.locales} onLanguageChanged={this.languageChanged} openMode="hover" />
         <LoginForm displayVal={loginDisplay}  loggedName={this.state.loggedName}  loggedPass={this.state.loggedPass} goLogged={this.goLogged} />
         <LoggedLine displayVal={loggedDisplay} loggedName={this.state.loggedName} goDelog={this.goDelog} />
       </div>
@@ -239,41 +230,7 @@ function saveLocale(newLocale) {
   document.cookie = "r18locale=" + newLocale + "; " + expires;
 };
 
-/**
- * Short localization function name, proxies to the implementation.
- * Could be internalized in the Components for avoiding global namespace
- * issues, but there is a trade-off between that and having a compact naming.
- */
-function ln() {
-  if(arguments.length < 1) {
-    return "??";
-  }
-  return XLator.xlate(arguments);
-}
 
-/**
- * This is a basic Translator module implementation, for demonstrating the principle.
- */
-var XLator = (function() {
-  var currentLang = "fr";
-  function _xlate(args) {
-    var keyArgs = args[0].split(".");
-    var mod = keyArgs[0];
-    var key = keyArgs[1];
-    return XLations["xl_" + currentLang][mod][key];
-  }
-  function _setLocale(newLocale) {
-    if(newLocale.indexOf("en") == 0) {
-      currentLang = "en";
-    } else {
-      currentLang = "fr";
-    }
-  }
-  return {
-    xlate:_xlate,
-    setLocale: _setLocale
-  }
-})();
 
 var XLations = {
   xl_fr : {
@@ -289,9 +246,10 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "caractères",
+      numchars: "{numChars, plural, =0 {aucun caractère} one {1 caractère} other {# caractères}}",
       deconnexion: "Déconnexion",
-      rendered: "Rendu le"
+      rendered: "Rendu le {dateRendered,date,medium}",
+      loginGender: "{gender, select, homme {un homme est logué} femme {une femme est loguée} other {une personne est loguée}}."
     }
   },
   xl_en : {
@@ -307,16 +265,38 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "chars",
+      numchars: "{numChars, plural, =0 {no character} one {1 char} other {# chars}}",
       deconnexion: "Disconnect",
-      rendered: "Rendered"
+      rendered: "Rendered on {dateRendered,date,medium}",
+      loginGender: "{gender, select, homme {a man is logged} femme {a woman is logged} other {a person is logged}}."
     }
   }
 };
 
-$(document).ready(function() {
+function renderLocalized(userLocale) {
+  userLocale = userLocale.replace("_","-");
+  var langFile = XLations.xl_en;
+  if(userLocale.indexOf("en") == 0) {
+    langFile = XLations.xl_en;
+  } else {
+    langFile = XLations.xl_fr;
+  }
+  var intlData = {
+      "locales": userLocale,
+      "messages": langFile
+  };  
   React.render(
-    <LoginWidget />,
+    <LoginWidget {...intlData} key={userLocale} />,
     document.getElementById('loginformcontainer')
   );
+
+}
+
+$(document).ready(function() {
+  var retrvdLocale = retrieveFromCookie();
+  if(retrvdLocale == null) {
+    var navLocale = navigator.languages? navigator.languages[0] : (navigator.language || navigator.userLanguage);
+    retrvdLocale = navLocale;
+  }
+  renderLocalized(retrvdLocale);
 });
