@@ -1,0 +1,22 @@
+{
+  "LoginForm": {
+    "errorLogin": "Login failed. Please check your Internet connection and the login information.",
+    "title": "Login form",
+    "loginLabel": "Email (login)",
+    "loginPlaceholder": "Your email",
+    "passLabel": "Password",
+    "passPlaceholder": "Password", 
+    "rememberTooltip": "Strongly discouraged on a public computer.",
+    "rememberInfo": "Remember information",
+    "loginButton": "Login"
+  },
+  "LoggedLine": {
+    "numchars": "__count__ char",
+    "numchars_plural": "__count__ chars",
+    "deconnexion": "Disconnect",
+    "rendered": "Rendered on __dateRendered__",
+    "loginGender": "a person is logged",
+    "loginGender_homme": "a man is logged",
+    "loginGender_femme": "a woman is logged"
+  }
+}

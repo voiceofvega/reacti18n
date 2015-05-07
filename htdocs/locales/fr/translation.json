@@ -1,0 +1,22 @@
+{
+  "LoginForm": {
+    "errorLogin": "Echec du Login.",
+    "title": "Formulaire pour Login",
+    "loginLabel": "Email (login)",
+    "loginPlaceholder": "Votre email",
+    "passLabel": "Mot de passe",
+    "passPlaceholder": "Password", 
+    "rememberTooltip": "Non recommandé sur un ordinateur partagé.",
+    "rememberInfo": "Mémoriser ces informations",
+    "loginButton": "Login"
+  },
+  "LoggedLine": {
+    "numchars": "__count__ caractère",
+    "numchars_plural": "__count__ caractères",
+    "deconnexion": "Déconnexion",
+    "rendered": "Rendu le __dateRendered__",
+    "loginGender": "une personne est loguée",
+    "loginGender_homme": "un homme est logué",
+    "loginGender_femme": "une femme est loguée"
+  }
+}

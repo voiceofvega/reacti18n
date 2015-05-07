@@ -27,22 +27,22 @@ var LoginForm = React.createClass({
     LOGGER.debug("LoginForm.render starts");
     return (
     <div className="container" id="loginform" style={{"maxWidth":"250px", "display":this.props.displayVal}}>
-      <h4>{polyglot.t("LoginForm.title")}</h4>
+      <h4>{i18n.t("LoginForm.title")}</h4>
       <form onSubmit={this.doLogin} action="javascript:;">
         <div className="form-group">
-          <label htmlFor="helperlogin">{polyglot.t("LoginForm.loginLabel")}</label>
-          <input type="text" className="form-control" id="helperlogin" placeholder={polyglot.t("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
+          <label htmlFor="helperlogin">{i18n.t("LoginForm.loginLabel")}</label>
+          <input type="text" className="form-control" id="helperlogin" placeholder={i18n.t("LoginForm.loginPlaceholder")} defaultValue={this.props.defaultLogin}/>
         </div>
         <div className="form-group">
-          <label htmlFor="helperpass">{polyglot.t("LoginForm.passLabel")}</label>
-          <input type="password" className="form-control" id="helperpass" placeholder={polyglot.t("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
+          <label htmlFor="helperpass">{i18n.t("LoginForm.passLabel")}</label>
+          <input type="password" className="form-control" id="helperpass" placeholder={i18n.t("LoginForm.passPlaceholder")} defaultValue={this.props.defaultPass}/>
         </div>
-        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={polyglot.t("LoginForm.rememberTooltip")}>
+        <div id="login-remember-tooltip" className="checkbox" data-placement="top" title={i18n.t("LoginForm.rememberTooltip")}>
           <label>
-            <input type="checkbox" defaultChecked={false} /> {polyglot.t("LoginForm.rememberInfo")}
+            <input type="checkbox" defaultChecked={false} /> {i18n.t("LoginForm.rememberInfo")}
           </label>
         </div>
-        <button type="submit" className="btn btn-primary btn-block">{polyglot.t("LoginForm.loginButton")}</button>
+        <button type="submit" className="btn btn-primary btn-block">{i18n.t("LoginForm.loginButton")}</button>
       </form>
     </div>
     );
@@ -76,16 +76,16 @@ var LoggedLine = React.createClass({
     return (
       <div className="row" style={{"paddingTop":"10px","paddingLeft":"10px","paddingRight":"10px","fontSize":"85%","display":this.props.displayVal}}>
         <div className="col-xs-10">
-          {this.props.loggedName} ({polyglot.t("LoggedLine.numchars", {"smart_count": this.props.loggedName.length} )} )
+          {this.props.loggedName} ({i18n.t("LoggedLine.numchars", {"count": this.props.loggedName.length} )} )
         </div>
-        <div id="logged-line-tooltip" className="col-xs-2" title={polyglot.t("LoggedLine.deconnexion")} data-placement="left" >
+        <div id="logged-line-tooltip" className="col-xs-2" title={i18n.t("LoggedLine.deconnexion")} data-placement="left" >
           <a href="javascript:;" onClick={this.goDelog} style={{"fontWeight":"bold","color":"red"}}>x</a>
         </div>
         <div>
-          {polyglot.t("LoggedLine.rendered", {dateRendered:new Date()} ) }
+          {i18n.t("LoggedLine.rendered", {dateRendered:moment(new Date()).format("LLL")} ) }
         </div>
         <div>
-          {polyglot.t("LoggedLine.loginGender", {gender: this.props.loggedName} ) }
+          {i18n.t("LoggedLine.loginGender", {context: this.props.loggedName} ) }
         </div>
       </div>
     );
@@ -108,7 +108,7 @@ var LoginWidget = React.createClass({
   goLogged: function(_loggedName, _loggedPass) {
     LOGGER.debug("LoginWidget.goLogged: " + _loggedName);
     if(_loggedPass !== 'pass') {
-      alert(polyglot.t("LoginForm.errorLogin"));
+      alert(i18n.t("LoginForm.errorLogin"));
       this.setState({logged:false});
     } else {
       this.setState({logged:true, loggedName:_loggedName, loggedPass:_loggedPass});
@@ -227,7 +227,7 @@ function saveLocale(newLocale) {
 
 
 var XLations = {
-  xl_fr : {
+  fr : {
     LoginForm: {
       errorLogin: "Echec du Login.",
       title: "Formulaire pour Login",
@@ -240,13 +240,16 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "%{smart_count} caractère |||| %{smart_count} caractères",
+      numchars: "__count__ caractère",
+      numchars_plural: "__count__ caractères",
       deconnexion: "Déconnexion",
       rendered: "Rendu le {dateRendered,date,medium}",
-      loginGender: "{gender, select, homme {un homme est logué} femme {une femme est loguée} other {une personne est loguée}}."
+      loginGender_context: "une personne est loguée",
+      loginGender_context_male: "un homme est logué",
+      loginGender_context_female: "une femme est loguée"
     }
   },
-  xl_en : {
+  en_US : {
     LoginForm: {
       errorLogin: "Login failed. Please check your Internet connection and the login information.",
       title: "Login form",
@@ -259,38 +262,27 @@ var XLations = {
       loginButton: "Login"
     },
     LoggedLine: {
-      numchars: "%{smart_count} char |||| %{smart_count} chars",
+      numchars: "__count__ char",
+      numchars_plural: "__count__ chars",
       deconnexion: "Disconnect",
       rendered: "Rendered on {dateRendered,date,medium}",
-      loginGender: "{gender, select, homme {a man is logged} femme {a woman is logged} other {a person is logged}}."
+      loginGender_context: "a person is logged",
+      loginGender_context_male: "a man is logged",
+      loginGender_context_female: "a woman is logged"
     }
   }
 };
 
-// HERE the global variable polyglot is created
-var polyglot = new Polyglot();
 
 function renderLocalized(userLocale) {
-  userLocale = userLocale.replace("_","-");
-  var langFile = XLations.xl_en;
-  if(userLocale.indexOf("en") == 0) {
-    langFile = XLations.xl_en;
-    polyglot.extend(langFile);
-    polyglot.locale("en");
-  } else {
-    langFile = XLations.xl_fr;
-    polyglot.extend(langFile);
-    polyglot.locale("fr");
-  }
-  var intlData = {
-      "locales": userLocale,
-      "messages": langFile
-  };  
-  React.render(
-    <LoginWidget />,
-    document.getElementById('loginformcontainer')
-  );
-
+  moment.locale(userLocale);
+  i18n.setLng(userLocale, function(t) { 
+    /* loading done */ 
+    React.render(
+      <LoginWidget locales={userLocale} />,
+      document.getElementById('loginformcontainer')
+    );
+  });
 }
 
 $(document).ready(function() {
@@ -299,5 +291,6 @@ $(document).ready(function() {
     var navLocale = navigator.languages? navigator.languages[0] : (navigator.language || navigator.userLanguage);
     retrvdLocale = navLocale;
   }
-  renderLocalized(retrvdLocale);
+  i18n.init({ cookieName: 'r18locale' }, function(t) { renderLocalized(retrvdLocale); });
+  
 });
